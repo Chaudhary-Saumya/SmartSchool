@@ -4,7 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const { pool } = require('../config/database');
 
-const JWT_SECRET = 'Secret'; // ⚠️ Replace with a strong secret in production
+const JWT_SECRET = 'Secret';
 
 // Multer configuration for profile image upload
 const storage = multer.diskStorage({
