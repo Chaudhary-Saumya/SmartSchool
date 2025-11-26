@@ -105,7 +105,7 @@ export default function SubjectsTaught() {
         setFormData({
           name: '',
           description: '',
-          class_id: ''
+          class_ids: []
         });
         fetchSubjects();
       } else {
@@ -125,7 +125,7 @@ export default function SubjectsTaught() {
     setFormData({
       name: subject.name,
       description: subject.description || '',
-      class_ids: subject.class_ids || []
+      class_ids: subject.class_ids ? subject.class_ids.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id)) : []
     });
     setShowEditPopup(true);
   };
@@ -152,7 +152,7 @@ export default function SubjectsTaught() {
         setFormData({
           name: '',
           description: '',
-          class_id: ''
+          class_ids: []
         });
         fetchSubjects();
       } else {
@@ -319,20 +319,21 @@ export default function SubjectsTaught() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Class</label>
-                        <select
-                          name="class_id"
-                          value={formData.class_id}
-                          onChange={handleInputChange}
-                          className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="">Select class (optional)</option>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Classes</label>
+                        <div className="max-h-32 overflow-y-auto border rounded-lg p-2">
                           {classes.map((cls) => (
-                            <option key={cls.id} value={cls.id}>
-                              {cls.name} ({cls.class_number})
-                            </option>
+                            <label key={cls.id} className="flex items-center space-x-2 mb-1">
+                              <input
+                                type="checkbox"
+                                value={cls.id}
+                                checked={formData.class_ids.includes(cls.id)}
+                                onChange={handleClassSelection}
+                                className="rounded"
+                              />
+                              <span className="text-sm">{cls.name} ({cls.class_number})</span>
+                            </label>
                           ))}
-                        </select>
+                        </div>
                       </div>
 
                       <div className="flex justify-end space-x-3 pt-4">
@@ -404,20 +405,21 @@ export default function SubjectsTaught() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Class</label>
-                        <select
-                          name="class_id"
-                          value={formData.class_id}
-                          onChange={handleInputChange}
-                          className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="">Select class (optional)</option>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Classes</label>
+                        <div className="max-h-32 overflow-y-auto border rounded-lg p-2">
                           {classes.map((cls) => (
-                            <option key={cls.id} value={cls.id}>
-                              {cls.name} ({cls.class_number})
-                            </option>
+                            <label key={cls.id} className="flex items-center space-x-2 mb-1">
+                              <input
+                                type="checkbox"
+                                value={cls.id}
+                                checked={formData.class_ids.includes(cls.id)}
+                                onChange={handleClassSelection}
+                                className="rounded"
+                              />
+                              <span className="text-sm">{cls.name} ({cls.class_number})</span>
+                            </label>
                           ))}
-                        </select>
+                        </div>
                       </div>
 
                       <div className="flex justify-end space-x-3 pt-4">

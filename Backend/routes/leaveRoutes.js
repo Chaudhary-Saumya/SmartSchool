@@ -4,8 +4,8 @@ const { verifyToken, checkRole } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Students can apply for leave
-router.post('/apply', verifyToken, checkRole(['student']), applyLeave);
+// Students and Teachers can apply for leave
+router.post('/apply', verifyToken, checkRole(['student', 'teacher']), applyLeave);
 
 // Admins and Teachers can view all leaves
 router.get('/', verifyToken, checkRole(['admin', 'teacher']), getAllLeaves);

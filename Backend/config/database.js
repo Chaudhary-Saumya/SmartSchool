@@ -182,6 +182,46 @@ const createTables = async () => {
       )
     `);
 
+    // Create tbl_exam_schedules table (depends on tbl_subjects and tbl_classes)
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS tbl_exam_schedules (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        subject_id INT NOT NULL,
+        class_id INT NOT NULL,
+        date DATE NOT NULL,
+        time TIME NOT NULL,
+        duration INT NOT NULL,
+        room_no VARCHAR(255) NOT NULL,
+        total_marks INT NOT NULL,
+        required_marks INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (subject_id) REFERENCES tbl_subjects(id) ON DELETE CASCADE,
+        FOREIGN KEY (class_id) REFERENCES tbl_classes(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Create tbl_departments table (depends on tbl_users)
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS tbl_departments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL UNIQUE,
+        head_of_department VARCHAR(255) NOT NULL,
+        phone VARCHAR(20) NOT NULL,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        start_date DATE NOT NULL,
+        student_capacity INT NOT NULL,
+        details TEXT,
+        building_name VARCHAR(255) NOT NULL,
+        number_of_classrooms INT NOT NULL,
+        website VARCHAR(255),
+        created_by INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (created_by) REFERENCES tbl_users(id) ON DELETE CASCADE
+      )
+    `);
+
     console.log('Tables created and renamed successfully');
   } catch (error) {
     console.error('Error creating tables:', error);

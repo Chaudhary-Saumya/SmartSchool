@@ -49,6 +49,7 @@ import Timetable from './pages/TimeTable';
 import TeacherDashboard from './pages/TeacherDashboard';
 import Lectures from './pages/Lectures';
 import LeaveRequests from './pages/LeaveRequests';
+import AdminLeaveRequests from './pages/AdminLeaveRequests';
 import ExamSchedule from './pages/ExamSchedule';
 import MyClasses from './pages/MyClasses';
 import SubjectsTaught from './pages/SubjectsTaught';
@@ -330,6 +331,15 @@ const App = () => {
           element={
             <ProtectedRoute>
               <AboutStaffs />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin-leave-requests"
+          element={
+            <ProtectedRoute>
+              <AdminLeaveRequests/>
             </ProtectedRoute>
           }
         />

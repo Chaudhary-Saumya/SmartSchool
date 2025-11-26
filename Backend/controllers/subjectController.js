@@ -2,7 +2,7 @@ const { pool } = require('../config/database');
 
 // ======================== Add Subject ========================
 const addSubject = async (req, res) => {
-  const { name, description, class_id } = req.body;
+  const { name, description, class_ids } = req.body;
   const createdBy = req.user.id; // From JWT decoded data
 
   try {
@@ -10,18 +10,32 @@ const addSubject = async (req, res) => {
       return res.status(400).json({ message: 'Subject name is required' });
     }
 
-    // Validate class_id if provided
-    if (class_id) {
-      const [classExists] = await pool.execute('SELECT * FROM tbl_classes WHERE id = ?', [class_id]);
-      if (classExists.length === 0) {
-        return res.status(404).json({ message: 'Class not found' });
+    // Validate class_ids if provided
+    if (class_ids && Array.isArray(class_ids)) {
+      for (const classId of class_ids) {
+        const [classExists] = await pool.execute('SELECT id FROM tbl_classes WHERE id = ?', [classId]);
+        if (classExists.length === 0) {
+          return res.status(404).json({ message: `Class with ID ${classId} not found` });
+        }
       }
     }
 
-    await pool.execute(
-      'INSERT INTO tbl_subjects (name, description, class_id, created_by) VALUES (?, ?, ?, ?)',
-      [name, description, class_id || null, createdBy]
+    // Insert subject
+    const [result] = await pool.execute(
+      'INSERT INTO tbl_subjects (name, description, created_by) VALUES (?, ?, ?)',
+      [name, description || null, createdBy]
     );
+    const subjectId = result.insertId;
+
+    // Insert subject-class relationships if class_ids provided
+    if (class_ids && Array.isArray(class_ids) && class_ids.length > 0) {
+      for (const classId of class_ids) {
+        await pool.execute(
+          'INSERT INTO tbl_subject_classes (subject_id, class_id) VALUES (?, ?)',
+          [subjectId, classId]
+        );
+      }
+    }
 
     res.status(201).json({ message: 'Subject added successfully' });
   } catch (error) {
@@ -81,11 +95,12 @@ const updateSubject = async (req, res) => {
 
       // Insert new relationships if class_ids provided
       if (Array.isArray(class_ids) && class_ids.length > 0) {
-        const values = class_ids.map(classId => [id, classId]);
-        await pool.execute(
-          `INSERT INTO tbl_subject_classes (subject_id, class_id) VALUES ?`,
-          [values]
-        );
+        for (const classId of class_ids) {
+          await pool.execute(
+            'INSERT INTO tbl_subject_classes (subject_id, class_id) VALUES (?, ?)',
+            [id, classId]
+          );
+        }
       }
     }
 

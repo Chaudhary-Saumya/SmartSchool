@@ -14,6 +14,8 @@ const classRoutes = require('./routes/classRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
 const studentRoutes = require('./routes/studentRoutes');
+const examScheduleRoutes = require('./routes/examScheduleRoutes');
+const departmentRoutes = require('./routes/departmentRoutes');
 
 
 const app = express();
@@ -37,6 +39,8 @@ app.use('/api/classes', classRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/teachers', teacherRoutes);
 app.use('/api/students', studentRoutes);
+app.use('/api/exam-schedules', examScheduleRoutes);
+app.use('/api/departments', departmentRoutes);
 
 // Initialize database tables
 createTables();

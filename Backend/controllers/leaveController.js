@@ -67,6 +67,11 @@ const approveLeave = async (req, res) => {
       return res.status(404).json({ message: 'Leave not found' });
     }
 
+    // Check if user can approve this leave
+    if (req.user.role === 'teacher' && leave[0].student_id !== req.user.id) {
+      return res.status(403).json({ message: 'You can only approve your own leave requests' });
+    }
+
     await pool.execute(
       'UPDATE tbl_leaves SET status = ?, updated_by = ? WHERE id = ?',
       ['approved', updatedBy, id]

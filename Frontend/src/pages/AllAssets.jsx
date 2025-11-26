@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Plus, RefreshCcw, Settings, Edit, Trash2 } from 'lucide-react';
 import AdminSidebar from '../components/AdminSidebar';
@@ -7,6 +7,9 @@ import Topbar from '../components/Topbar';
 
 export default function AllAssets() {
   const [activePage, setActivePage] = useState("all-assets"); // eslint-disable-line no-unused-vars
+  const [assets, setAssets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const role = localStorage.getItem("role") || "";
   const navigate = useNavigate();
 
@@ -15,56 +18,77 @@ export default function AllAssets() {
     localStorage.removeItem("role");
     navigate("/");
   };
-  const books = [
-    {
-      bookNumber: 'B123451',
-      title: 'Web Programming',
-      subject: 'Mathematics',
-      purchaseDate: '02/25/2019',
-      department: 'Civil',
-      type: 'Newspaper',
-      status: 'Out of Stock',
-      lastBorrowed: '01/15/2022',
-      borrowerName: 'Jane Doe',
-      shelfLocation: 'C3',
-      avatar: 'https://i.pravatar.cc/40?img=1'
-    },
-    {
-      bookNumber: 'B123452',
-      title: 'Computer Networks',
-      subject: 'Computer Science',
-      purchaseDate: '03/10/2021',
-      department: 'IT',
-      type: 'Book',
-      status: 'Available',
-      lastBorrowed: '08/11/2023',
-      borrowerName: 'N/A',
-      shelfLocation: 'A2',
-      avatar: 'https://i.pravatar.cc/40?img=2'
-    },
-    {
-      bookNumber: 'B123453',
-      title: 'Physics for Engineers',
-      subject: 'Physics',
-      purchaseDate: '07/19/2020',
-      department: 'Mechanical',
-      type: 'Book',
-      status: 'Borrowed',
-      lastBorrowed: '11/01/2024',
-      borrowerName: 'Rahul Mehta',
-      shelfLocation: 'B5',
-      avatar: 'https://i.pravatar.cc/40?img=3'
+
+  useEffect(() => {
+    fetchAssets();
+  }, []);
+
+  const fetchAssets = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/library', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAssets(data);
+      } else {
+        setError('Failed to fetch library assets');
+      }
+    } catch (err) {
+      setError('Error fetching library assets');
+      console.error('Error:', err);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const handleAddAsset = () => {
+    navigate('/add-library');
+  };
+
+  const handleEditAsset = (id) => {
+    navigate(`/edit-library/${id}`);
+  };
+
+  const handleDeleteAsset = async (id) => {
+    if (!confirm('Are you sure you want to delete this asset?')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/library/delete/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        alert('Asset deleted successfully');
+        fetchAssets(); // Refresh the list
+      } else {
+        alert('Failed to delete asset');
+      }
+    } catch (err) {
+      alert('Error deleting asset');
+      console.error('Error:', err);
+    }
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Available':
+      case 'available':
         return 'bg-green-100 text-green-600';
-      case 'Borrowed':
+      case 'borrowed':
         return 'bg-yellow-100 text-yellow-600';
-      case 'Out of Stock':
+      case 'damaged':
         return 'bg-red-100 text-red-600';
+      case 'lost':
+        return 'bg-orange-100 text-orange-600';
       default:
         return 'bg-gray-100 text-gray-600';
     }
@@ -104,10 +128,10 @@ export default function AllAssets() {
                 <button className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200">
                   <Filter className="w-4 h-4 text-gray-600" />
                 </button>
-                <button className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+                <button onClick={handleAddAsset} className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200">
                   <Plus className="w-4 h-4 text-gray-600" />
                 </button>
-                <button className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+                <button onClick={fetchAssets} className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200">
                   <RefreshCcw className="w-4 h-4 text-gray-600" />
                 </button>
               </div>
@@ -126,45 +150,70 @@ export default function AllAssets() {
                     <th className="p-3 text-left w-24">Department</th>
                     <th className="p-3 text-left w-20">Type</th>
                     <th className="p-3 text-left w-20">Status</th>
-                    <th className="p-3 text-left w-24">Last Borrowed</th>
-                    <th className="p-3 text-left w-28">Borrower Name</th>
                     <th className="p-3 text-left w-20">Shelf Location</th>
                     <th className="p-3 text-left w-20">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {books.map((item, i) => (
-                    <tr key={i} className="border-b hover:bg-gray-50">
-                      <td className="p-3"><input type="checkbox" /></td>
-                      <td className="p-3 text-gray-800 font-medium">{item.bookNumber}</td>
-                      <td className="p-3">
-                        <div className="flex items-center space-x-2">
-                          <img src={item.avatar} alt="book" className="w-10 h-10 rounded-full" />
-                          <span className="text-gray-800 font-medium">{item.title}</span>
-                        </div>
-                      </td>
-                      <td className="p-3 text-gray-700">{item.subject}</td>
-                      <td className="p-3 text-gray-700">{item.purchaseDate}</td>
-                      <td className="p-3 text-gray-700">{item.department}</td>
-                      <td className="p-3 text-gray-700 capitalize">{item.type}</td>
-                      <td className="p-3">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(item.status)}`}>
-                          {item.status}
-                        </span>
-                      </td>
-                      <td className="p-3 text-gray-700">{item.lastBorrowed}</td>
-                      <td className="p-3 text-gray-700">{item.borrowerName}</td>
-                      <td className="p-3 text-gray-700">{item.shelfLocation}</td>
-                      <td className="p-3 flex space-x-2">
-                        <button className="p-1.5 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200">
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                  {loading ? (
+                    <tr>
+                      <td colSpan="12" className="p-8 text-center text-gray-500">
+                        Loading library assets...
                       </td>
                     </tr>
-                  ))}
+                  ) : error ? (
+                    <tr>
+                      <td colSpan="12" className="p-8 text-center text-red-500">
+                        {error}
+                      </td>
+                    </tr>
+                  ) : assets.length === 0 ? (
+                    <tr>
+                      <td colSpan="12" className="p-8 text-center text-gray-500">
+                        No library assets found. Click the + button to add your first asset.
+                      </td>
+                    </tr>
+                  ) : (
+                    assets.map((asset) => (
+                      <tr key={asset.id} className="border-b hover:bg-gray-50">
+                        <td className="p-3"><input type="checkbox" /></td>
+                        <td className="p-3 text-gray-800 font-medium">#{asset.id}</td>
+                        <td className="p-3">
+                          <div className="flex items-center space-x-2">
+                            
+                            <span className="text-gray-800 font-medium">{asset.title}</span>
+                          </div>
+                        </td>
+                        <td className="p-3 text-gray-700">{asset.subject_name || 'N/A'}</td>
+                        <td className="p-3 text-gray-700">
+                          {new Date(asset.purchase_date).toLocaleDateString()}
+                        </td>
+                        <td className="p-3 text-gray-700">N/A</td>
+                        <td className="p-3 text-gray-700 capitalize">{asset.asset_type}</td>
+                        <td className="p-3">
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(asset.status)}`}>
+                            {asset.status}
+                          </span>
+                        </td>
+                      
+                        <td className="p-3 text-gray-700">{asset.shelf_location || 'N/A'}</td>
+                        <td className="p-3 flex space-x-2">
+                          <button
+                            onClick={() => handleEditAsset(asset.id)}
+                            className="p-1.5 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAsset(asset.id)}
+                            className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

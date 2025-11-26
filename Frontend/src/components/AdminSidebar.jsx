@@ -531,8 +531,8 @@ const AdminSidebar = ({ logoutHandler }) => {
           </button>
           {openMenus.hr && (
             <div className="ml-8 mt-1 text-sm space-y-1">
-              <Link to="/employee-leave-requests" className="block hover:text-blue-600 mb-2">
-                Employee Leave Requests
+              <Link to="/admin-leave-requests" className="block hover:text-blue-600 mb-2">
+                Leave Requests
               </Link>
               <Link to="/employee-leave-balance" className="block hover:text-blue-600 mb-2">
                 Employee Leave Balance
